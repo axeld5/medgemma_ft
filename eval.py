@@ -59,18 +59,25 @@ if __name__ == "__main__":
 
     def postprocess(prediction: list[dict[str, str]], do_full_match: bool=False) -> int:
         response_text = prediction[0]["generated_text"]
-        print(response_text)
+        print(f"Response text: '{response_text}' (length: {len(response_text)})")
         if do_full_match:
             # Check if response_text is empty or not a valid class label
             if not response_text or response_text.strip() == "":
+                print("Empty response detected")
                 return -1
             try:
-                return LABEL_FEATURE.str2int(response_text)
-            except ValueError:
+                result = LABEL_FEATURE.str2int(response_text)
+                print(f"Full match successful: {response_text} -> {result}")
+                return result
+            except ValueError as e:
+                print(f"Full match failed: {e}")
                 # If str2int fails, fall back to partial matching
                 for label in BRAIN_CLASSES:
                     if label in response_text or ALT_LABELS[label] in response_text:
-                        return LABEL_FEATURE.str2int(label)
+                        result = LABEL_FEATURE.str2int(label)
+                        print(f"Partial match successful: {label} -> {result}")
+                        return result
+                print("No match found")
                 return -1
         for label in BRAIN_CLASSES:
             # Search for `X: tissue type` or `(X) tissue type` in the response
@@ -102,23 +109,35 @@ if __name__ == "__main__":
     pt_metrics = compute_metrics(pt_predictions)
     print(f"Baseline metrics: {pt_metrics}")
 
+    # Load the fine-tuned model's processor separately
+    try:
+        ft_processor = AutoProcessor.from_pretrained("axel-darmouni/medgemma-4b-it-sft-lora-brain-regions")
+    except:
+        # If no processor available, use the original processor with correct padding
+        ft_processor = processor
+    
     ft_pipe = pipeline(
         "image-text-to-text",
         model="axel-darmouni/medgemma-4b-it-sft-lora-brain-regions",
-        processor=processor,
+        processor=ft_processor,
         torch_dtype=torch.bfloat16,
     )
 
     # Set `do_sample = False` for deterministic responses
     ft_pipe.model.generation_config.do_sample = False
-    ft_pipe.model.generation_config.pad_token_id = processor.tokenizer.eos_token_id
-    # Use left padding during inference
-    processor.tokenizer.padding_side = "left"
+    ft_pipe.model.generation_config.pad_token_id = ft_processor.tokenizer.eos_token_id
+    # Use RIGHT padding during inference (same as training)
+    ft_processor.tokenizer.padding_side = "right"
+    
+    # Debug: Print first few messages to check format
+    print("First 2 messages:")
+    for i in range(min(2, len(test_data["messages"]))):
+        print(f"Message {i}: {test_data['messages'][i]}")
 
     ft_outputs = ft_pipe(
         text=test_data["messages"],
         images=test_data["image"],
-        max_new_tokens=20,
+        max_new_tokens=40,  # Increased from 20 to 40
         batch_size=64,
         return_full_text=False,
     )
