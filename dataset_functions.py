@@ -63,11 +63,18 @@ def process_custom_dataset(dataset_path):
 
     # Get unique classes and create label mapping (filter out empty strings)
     all_labels = list(set(train_labels + test_labels))
-    all_labels = [label for label in all_labels if label]  # Remove empty strings
-    label_to_id = {label: idx for idx, label in enumerate(sorted(all_labels))}
+    full_labels = []
+    for label in all_labels:
+        if label in BRAIN_CLASSES:
+            full_labels.append(label)
+        elif label == "parietel":
+            full_labels.append("parietal")
+        else:
+            raise ValueError(f"Label {label} not found in BRAIN_CLASSES")
+    label_to_id = {label: idx for idx, label in enumerate(sorted(full_labels))}
     id_to_label = {idx: label for label, idx in label_to_id.items()}
 
-    print(f"Classes found: {sorted(all_labels)}")
+    print(f"Classes found: {sorted(full_labels)}")
     print(f"Label mapping: {label_to_id}")
 
     # Verify we have the expected number of labels
@@ -103,7 +110,7 @@ def process_custom_dataset(dataset_path):
     # Define features
     features = Features({
         'image': Image(),
-        'label': ClassLabel(names=sorted(all_labels)),
+        'label': ClassLabel(names=sorted(full_labels)),
         'text': Value('string')
     })
 
