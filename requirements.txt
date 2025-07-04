@@ -6,4 +6,5 @@ tensorboard
 transformers
 trl
 torch
+torchvision
 tf-keras

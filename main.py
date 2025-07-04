@@ -80,7 +80,7 @@ if __name__ == "__main__":
         batch["labels"] = labels
         return batch
 
-    num_train_epochs = 1  # @param {type: "number"}
+    num_train_epochs = 10  # @param {type: "number"}
     learning_rate = 2e-4  # @param {type: "number"}
 
     args = SFTConfig(
