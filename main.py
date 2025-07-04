@@ -118,4 +118,3 @@ if __name__ == "__main__":
         data_collator=collate_fn,
     )
     trainer.train()
-    trainer.save_model()
