@@ -1,5 +1,7 @@
 import os
 import torch
+import evaluate
+from datasets import ClassLabel
 from transformers import AutoProcessor, AutoModelForImageTextToText, BitsAndBytesConfig
 from peft import LoraConfig
 from trl import SFTConfig, SFTTrainer
@@ -80,11 +82,11 @@ if __name__ == "__main__":
         batch["labels"] = labels
         return batch
 
-    num_train_epochs = 10  # @param {type: "number"}
+    num_train_epochs = 3  # @param {type: "number"}
     learning_rate = 2e-4  # @param {type: "number"}
 
     args = SFTConfig(
-        output_dir="medgemma-4b-it-sft-lora-crc100k",            # Directory and Hub repository id to save the model to
+        output_dir="medgemma-4b-it-sft-lora-brain-regions",            # Directory and Hub repository id to save the model to
         num_train_epochs=num_train_epochs,                       # Number of training epochs
         per_device_train_batch_size=4,                           # Batch size per device during training
         per_device_eval_batch_size=4,                            # Batch size per device during evaluation
@@ -121,3 +123,107 @@ if __name__ == "__main__":
         data_collator=collate_fn,
     )
     trainer.train()
+
+
+    accuracy_metric = evaluate.load("accuracy")
+    f1_metric = evaluate.load("f1")
+
+    # Ground-truth labels
+    REFERENCES = formatted_data["validation"]["label"]
+    test_data = formatted_data["validation"]
+
+    def compute_metrics(predictions: list[int]) -> dict[str, float]:
+        metrics = {}
+        metrics.update(accuracy_metric.compute(
+            predictions=predictions,
+            references=REFERENCES,
+        ))
+        metrics.update(f1_metric.compute(
+            predictions=predictions,
+            references=REFERENCES,
+            average="weighted",
+        ))
+        return metrics
+    
+    BRAIN_CLASSES = [
+        "A: frontal",
+        "B: occipital",
+        "C: parietal",
+        "D: temporal",
+    ]
+    options = "\n".join(BRAIN_CLASSES)
+    PROMPT = f"What brain region does the edema span the most?\n{options}"
+
+    # Rename the class names to the tissue classes, `X: tissue type`
+    test_data = test_data.cast_column(
+        "label",
+        ClassLabel(names=BRAIN_CLASSES)
+    )
+
+    LABEL_FEATURE = test_data.features["label"]
+    # Mapping to alternative label format, `(X) tissue type`
+    ALT_LABELS = dict([
+        (label, f"({label.replace(': ', ') ')}") for label in BRAIN_CLASSES
+    ])
+
+
+    def postprocess(prediction: list[dict[str, str]], do_full_match: bool=False) -> int:
+        response_text = prediction[0]["generated_text"]
+        if do_full_match:
+            return LABEL_FEATURE.str2int(response_text)
+        for label in BRAIN_CLASSES:
+            # Search for `X: tissue type` or `(X) tissue type` in the response
+            if label in response_text or ALT_LABELS[label] in response_text:
+                return LABEL_FEATURE.str2int(label)
+        return -1
+
+    from transformers import pipeline
+
+    pt_pipe = pipeline(
+        "image-text-to-text",
+        model=model_id,
+        torch_dtype=torch.bfloat16,
+    )
+
+    # Set `do_sample = False` for deterministic responses
+    pt_pipe.model.generation_config.do_sample = False
+    pt_pipe.model.generation_config.pad_token_id = processor.tokenizer.eos_token_id
+
+    pt_outputs = pt_pipe(
+        text=test_data["messages"],
+        images=test_data["image"],
+        max_new_tokens=40,
+        batch_size=64,
+        return_full_text=False,
+    )
+
+    pt_predictions = [postprocess(out) for out in pt_outputs]
+
+    pt_metrics = compute_metrics(pt_predictions)
+    print(f"Baseline metrics: {pt_metrics}")
+
+    ft_pipe = pipeline(
+        "image-text-to-text",
+        model="axel-darmouni/medgemma-4b-it-sft-lora-brain-regions",
+        processor=processor,
+        torch_dtype=torch.bfloat16,
+    )
+
+    # Set `do_sample = False` for deterministic responses
+    ft_pipe.model.generation_config.do_sample = False
+    ft_pipe.model.generation_config.pad_token_id = processor.tokenizer.eos_token_id
+    # Use left padding during inference
+    processor.tokenizer.padding_side = "left"
+
+    ft_outputs = ft_pipe(
+        text=test_data["messages"],
+        images=test_data["image"],
+        max_new_tokens=20,
+        batch_size=64,
+        return_full_text=False,
+    )
+
+    ft_predictions = [postprocess(out, do_full_match=True) for out in ft_outputs]
+
+    ft_metrics = compute_metrics(ft_predictions)
+    print(f"Fine-tuned metrics: {ft_metrics}")
