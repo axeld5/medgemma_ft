@@ -5,4 +5,5 @@ peft
 tensorboard
 transformers
 trl
+torch
 tf-keras
