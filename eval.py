@@ -96,8 +96,15 @@ if __name__ == "__main__":
     pt_pipe.model.generation_config.do_sample = False
     pt_pipe.model.generation_config.pad_token_id = processor.tokenizer.eos_token_id
 
+    # Extract only the user's part of the conversation for baseline inference too
+    baseline_user_messages = []
+    for message in test_data["messages"]:
+        # Only keep the user's message, not the assistant's response
+        user_only = [msg for msg in message if msg["role"] == "user"]
+        baseline_user_messages.append(user_only)
+
     pt_outputs = pt_pipe(
-        text=test_data["messages"],
+        text=baseline_user_messages,
         images=test_data["image"],
         max_new_tokens=40,
         batch_size=64,
@@ -129,13 +136,20 @@ if __name__ == "__main__":
     # Use RIGHT padding during inference (same as training)
     ft_processor.tokenizer.padding_side = "right"
     
+    # Extract only the user's part of the conversation for inference
+    user_messages = []
+    for message in test_data["messages"]:
+        # Only keep the user's message, not the assistant's response
+        user_only = [msg for msg in message if msg["role"] == "user"]
+        user_messages.append(user_only)
+    
     # Debug: Print first few messages to check format
-    print("First 2 messages:")
-    for i in range(min(2, len(test_data["messages"]))):
-        print(f"Message {i}: {test_data['messages'][i]}")
+    print("First 2 user messages:")
+    for i in range(min(2, len(user_messages))):
+        print(f"User message {i}: {user_messages[i]}")
 
     ft_outputs = ft_pipe(
-        text=test_data["messages"],
+        text=user_messages,
         images=test_data["image"],
         max_new_tokens=40,  # Increased from 20 to 40
         batch_size=64,
