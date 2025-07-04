@@ -84,7 +84,7 @@ if __name__ == "__main__":
         output_dir="medgemma-4b-it-sft-brain-regions",            # Directory and Hub repository id to save the model to
         num_train_epochs=num_train_epochs,                       # Number of training epochs
         per_device_train_batch_size=4,                           # Batch size per device during training
-        per_device_eval_batch_size=4,                            # Batch size per device during evaluation
+        per_device_eval_batch_size=16,                            # Batch size per device during evaluation
         gradient_accumulation_steps=4,                           # Number of steps before performing a backward/update pass
         gradient_checkpointing=True,                             # Enable gradient checkpointing to reduce memory usage
         optim="adamw_torch_fused",                               # Use fused AdamW optimizer for better performance
