@@ -1,3 +1,4 @@
+torch>=2.6.0
 bitsandbytes
 datasets
 evaluate
@@ -5,6 +6,5 @@ peft
 tensorboard
 transformers
 trl
-torch
 torchvision
 tf-keras
