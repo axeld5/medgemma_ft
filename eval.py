@@ -59,7 +59,6 @@ if __name__ == "__main__":
 
     def postprocess(prediction: list[dict[str, str]], do_full_match: bool=False) -> int:
         response_text = prediction[0]["generated_text"]
-        print(f"Response text: '{response_text}' (length: {len(response_text)})")
         if do_full_match:
             # Check if response_text is empty or not a valid class label
             if not response_text or response_text.strip() == "":
@@ -142,11 +141,6 @@ if __name__ == "__main__":
         # Only keep the user's message, not the assistant's response
         user_only = [msg for msg in message if msg["role"] == "user"]
         user_messages.append(user_only)
-    
-    # Debug: Print first few messages to check format
-    print("First 2 user messages:")
-    for i in range(min(2, len(user_messages))):
-        print(f"User message {i}: {user_messages[i]}")
 
     ft_outputs = ft_pipe(
         text=user_messages,
