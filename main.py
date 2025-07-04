@@ -3,8 +3,7 @@ from transformers import AutoProcessor, AutoModelForImageTextToText, BitsAndByte
 from peft import LoraConfig
 from trl import SFTConfig, SFTTrainer
 
-from dataset_functions import setup_and_process_dataset
-from ft_helpers import format_data
+from dataset_functions import setup_and_process_dataset, format_data
 
 if __name__ == "__main__":
     data = setup_and_process_dataset()
