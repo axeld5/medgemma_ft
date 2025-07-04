@@ -81,6 +81,7 @@ if __name__ == "__main__":
         for label in BRAIN_CLASSES:
             # Search for `X: tissue type` or `(X) tissue type` in the response
             if label in response_text or ALT_LABELS[label] in response_text:
+                print(f"Partial match successful: {label} -> {LABEL_FEATURE.str2int(label)}")
                 return LABEL_FEATURE.str2int(label)
         return -1
 
@@ -140,9 +141,8 @@ if __name__ == "__main__":
     ft_pipe = pipeline(
         "image-text-to-text",
         model=model_id,
-        **model_kwargs,
         processor=ft_processor,
-        torch_dtype=torch.bfloat16,
+        **model_kwargs,
     )
 
     # Set `do_sample = False` for deterministic responses
