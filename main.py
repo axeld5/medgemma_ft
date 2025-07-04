@@ -117,4 +117,5 @@ if __name__ == "__main__":
         processing_class=processor,
         data_collator=collate_fn,
     )
+    trainer.train()
     trainer.save_model()
