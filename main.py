@@ -22,11 +22,8 @@ if __name__ == "__main__":
     )
 
     model_kwargs["quantization_config"] = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=model_kwargs["torch_dtype"],
-        bnb_4bit_quant_storage=model_kwargs["torch_dtype"],
+        load_in_8bit=True,
+        # 8-bit quantization does not use the 4-bit specific arguments
     )
 
     model = AutoModelForImageTextToText.from_pretrained(model_id, **model_kwargs)
@@ -36,9 +33,9 @@ if __name__ == "__main__":
     processor.tokenizer.padding_side = "right"
 
     peft_config = LoraConfig(
-        lora_alpha=16,
-        lora_dropout=0.05,
-        r=16,
+        lora_alpha=32,
+        lora_dropout=0.1,
+        r=32,
         bias="none",
         target_modules="all-linear",
         task_type="CAUSAL_LM",
