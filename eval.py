@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     ft_pipe = pipeline(
         "image-text-to-text",
-        model="axel-darmouni/medgemma-4b-it-sft-lora-brain-regions",
+        model="axel-darmouni/medgemma-4b-it-sft-brain-regions",
         processor=ft_processor,
         **model_kwargs,
     )
