@@ -65,9 +65,9 @@ def process_custom_dataset(dataset_path):
     all_labels = list(set(train_labels + test_labels))
     full_labels = []
     for label in all_labels:
-        if label in BRAIN_CLASSES:
+        if label in [elem.split(":")[1].strip() for elem in BRAIN_CLASSES]:
             full_labels.append(label)
-        elif label == "parietel":
+        elif label == "parietal":
             full_labels.append("parietal")
         else:
             raise ValueError(f"Label {label} not found in BRAIN_CLASSES")
