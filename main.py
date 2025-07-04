@@ -77,7 +77,7 @@ if __name__ == "__main__":
         batch["labels"] = labels
         return batch
 
-    num_train_epochs = 10  # @param {type: "number"}
+    num_train_epochs = 200  # @param {type: "number"}
     learning_rate = 2e-4  # @param {type: "number"}
 
     args = SFTConfig(
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         metric_for_best_model="eval_loss",
         greater_is_better=False,            # Save checkpoint every epoch
         eval_strategy="epoch",                                   # Evaluate every `eval_steps`
-        eval_steps=1,                                           # Number of steps between evaluations
+        eval_steps=2,                                           # Number of steps between evaluations
         learning_rate=learning_rate,                             # Learning rate based on QLoRA paper
         bf16=True,                                               # Use bfloat16 precision
         max_grad_norm=0.3,                                       # Max gradient norm based on QLoRA paper
