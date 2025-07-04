@@ -92,9 +92,12 @@ if __name__ == "__main__":
         gradient_checkpointing=True,                             # Enable gradient checkpointing to reduce memory usage
         optim="adamw_torch_fused",                               # Use fused AdamW optimizer for better performance
         logging_steps=50,                                        # Number of steps between logs
-        save_strategy="epoch",                                   # Save checkpoint every epoch
-        eval_strategy="steps",                                   # Evaluate every `eval_steps`
-        eval_steps=50,                                           # Number of steps between evaluations
+        save_strategy="epoch", 
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_loss",
+        greater_is_better=False,            # Save checkpoint every epoch
+        eval_strategy="epoch",                                   # Evaluate every `eval_steps`
+        eval_steps=1,                                           # Number of steps between evaluations
         learning_rate=learning_rate,                             # Learning rate based on QLoRA paper
         bf16=True,                                               # Use bfloat16 precision
         max_grad_norm=0.3,                                       # Max gradient norm based on QLoRA paper
