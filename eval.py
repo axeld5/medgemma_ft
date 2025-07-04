@@ -86,7 +86,7 @@ if __name__ == "__main__":
         return -1
 
 
-    pt_pipe = pipeline(
+    """pt_pipe = pipeline(
         "image-text-to-text",
         model=model_id,
         torch_dtype=torch.bfloat16,
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     pt_predictions = [postprocess(out) for out in pt_outputs]
 
     pt_metrics = compute_metrics(pt_predictions)
-    print(f"Baseline metrics: {pt_metrics}")
+    print(f"Baseline metrics: {pt_metrics}")"""
 
     # Load the fine-tuned model's processor separately
     try:
@@ -127,14 +127,6 @@ if __name__ == "__main__":
         attn_implementation="eager",
         torch_dtype=torch.bfloat16,
         device_map="auto",
-    )
-
-    model_kwargs["quantization_config"] = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=model_kwargs["torch_dtype"],
-        bnb_4bit_quant_storage=model_kwargs["torch_dtype"],
     )
 
 
