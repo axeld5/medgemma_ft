@@ -56,10 +56,10 @@ def process_custom_dataset(dataset_path):
 
     # Read label files and filter out empty lines
     with open(train_labels_path, 'r') as f:
-        train_labels = [line.strip() for line in f.readlines() if line.strip()]
+        train_labels = [line.strip().replace("parietel", "parietal") for line in f.readlines() if line.strip()]
 
     with open(test_labels_path, 'r') as f:
-        test_labels = [line.strip() for line in f.readlines() if line.strip()]
+        test_labels = [line.strip().replace("parietel", "parietal") for line in f.readlines() if line.strip()]
 
     # Get unique classes and create label mapping (filter out empty strings)
     all_labels = list(set(train_labels + test_labels))
@@ -67,8 +67,6 @@ def process_custom_dataset(dataset_path):
     for label in all_labels:
         if label in [elem.split(":")[1].strip() for elem in BRAIN_CLASSES]:
             full_labels.append(label)
-        elif label == "parietel":
-            full_labels.append("parietal")
         else:
             raise ValueError(f"Label {label} not found in BRAIN_CLASSES")
     label_to_id = {label: idx for idx, label in enumerate(sorted(full_labels))}
