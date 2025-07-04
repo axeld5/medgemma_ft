@@ -106,6 +106,7 @@ if __name__ == "__main__":
         dataset_kwargs={"skip_prepare_dataset": True},           # Skip default dataset preparation to preprocess manually
         remove_unused_columns = False,                           # Columns are unused for training but needed for data collator
         label_names=["labels"],                                  # Input keys that correspond to the labels
+        save_safetensors=False,                                  # Disable safetensors to avoid shared memory issues with tied weights
     )
 
     trainer = SFTTrainer(
