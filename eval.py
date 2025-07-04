@@ -122,9 +122,25 @@ if __name__ == "__main__":
         # If no processor available, use the original processor with correct padding
         ft_processor = processor
     
+    model_kwargs = dict(
+        attn_implementation="eager",
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+    )
+
+    model_kwargs["quantization_config"] = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=model_kwargs["torch_dtype"],
+        bnb_4bit_quant_storage=model_kwargs["torch_dtype"],
+    )
+
+
     ft_pipe = pipeline(
         "image-text-to-text",
-        model="axel-darmouni/medgemma-4b-it-sft-lora-brain-regions",
+        model=model_id,
+        **model_kwargs,
         processor=ft_processor,
         torch_dtype=torch.bfloat16,
     )
