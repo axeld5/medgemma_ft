@@ -81,7 +81,7 @@ if __name__ == "__main__":
     learning_rate = 2e-4  # @param {type: "number"}
 
     args = SFTConfig(
-        output_dir="medgemma-4b-it-sft-lora-brain-regions",            # Directory and Hub repository id to save the model to
+        output_dir="medgemma-4b-it-sft-brain-regions",            # Directory and Hub repository id to save the model to
         num_train_epochs=num_train_epochs,                       # Number of training epochs
         per_device_train_batch_size=4,                           # Batch size per device during training
         per_device_eval_batch_size=4,                            # Batch size per device during evaluation
@@ -112,8 +112,8 @@ if __name__ == "__main__":
         model=model,
         args=args,
         train_dataset=formatted_data["train"],
-        eval_dataset=formatted_data["validation"].shuffle(), #.select(range(200)),  # Use subset of validation set for faster run
-        peft_config=peft_config,
+        eval_dataset=formatted_data["validation"],  # Use subset of validation set for faster run
+        #peft_config=peft_config,
         processing_class=processor,
         data_collator=collate_fn,
     )
