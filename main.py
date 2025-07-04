@@ -3,14 +3,11 @@ import torch
 from transformers import AutoProcessor, AutoModelForImageTextToText, BitsAndBytesConfig
 from peft import LoraConfig
 from trl import SFTConfig, SFTTrainer
-from dotenv import load_dotenv
 from huggingface_hub import login
 from dataset_functions import setup_and_process_dataset, format_data
 
-load_dotenv()
-
 if __name__ == "__main__":
-    login(os.environ["HF_TOKEN"])
+    login()
     data = setup_and_process_dataset()
     data["validation"] = data.pop("test")
     formatted_data = data.map(format_data)
