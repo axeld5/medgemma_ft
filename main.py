@@ -21,10 +21,10 @@ if __name__ == "__main__":
         device_map="auto",
     )
 
-    model_kwargs["quantization_config"] = BitsAndBytesConfig(
-        load_in_8bit=True,
-        # 8-bit quantization does not use the 4-bit specific arguments
-    )
+    #model_kwargs["quantization_config"] = BitsAndBytesConfig(
+    #    load_in_8bit=True,
+    #    # 8-bit quantization does not use the 4-bit specific arguments
+    #)
 
     model = AutoModelForImageTextToText.from_pretrained(model_id, **model_kwargs)
     processor = AutoProcessor.from_pretrained(model_id)
